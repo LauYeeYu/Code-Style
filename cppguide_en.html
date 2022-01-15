@@ -410,9 +410,9 @@ example:</p>
 
 <pre class="neutralcode">namespace outer {
 inline namespace inner {
-  void foo();
-}  // namespace inner
-}  // namespace outer
+    void foo();
+} // namespace inner
+} // namespace outer
 </pre>
 
 <p>The expressions <code>outer::inner::foo()</code> and
@@ -456,12 +456,12 @@ namespace mynamespace {
 // All declarations are within the namespace scope.
 // Notice the lack of indentation.
 class MyClass {
- public:
-  ...
-  void Foo();
+public:
+    ...
+    void Foo();
 };
 
-}  // namespace mynamespace
+} // namespace mynamespace
 </pre>
 
 <pre>// In the .cpp file
@@ -469,10 +469,10 @@ namespace mynamespace {
 
 // Definition of functions is within scope of the namespace.
 void MyClass::Foo() {
-  ...
+    ...
 }
 
-}  // namespace mynamespace
+} // namespace mynamespace
 </pre>
 
   <p>More complex <code>.cpp</code> files might have additional details,
@@ -486,21 +486,16 @@ namespace mynamespace {
 
 using ::foo::Bar;
 
-...code for mynamespace...    // Code goes against the left margin.
+...code for mynamespace... // Code goes against the left margin.
 
-}  // namespace mynamespace
+} // namespace mynamespace
 </pre>
   </li>
 
   <li>To place generated protocol
   message code in a namespace, use the
   <code>package</code> specifier in the
-  <code>.proto</code> file. See
-
-
-  <a href="https://developers.google.com/protocol-buffers/docs/reference/cpp-generated#package">
-  Protocol Buffer Packages</a>
-  for details.</li>
+  <code>.proto</code> file.</li>
 
   <li>Do not declare anything in namespace
   <code>std</code>, including forward declarations of
@@ -529,16 +524,16 @@ namespace baz = ::foo::bar::baz;
 
 <pre>// Shorten access to some commonly used names (in a .h file).
 namespace librarian {
-namespace impl {  // Internal, not part of the API.
+namespace impl { // Internal, not part of the API.
 namespace sidetable = ::pipeline_diagnostics::sidetable;
-}  // namespace impl
+} // namespace impl
 
 inline void my_inline_function() {
-  // namespace alias local to a function (or method).
-  namespace baz = ::foo::bar::baz;
+    // namespace alias local to a function (or method).
+    namespace baz = ::foo::bar::baz;
   ...
 }
-}  // namespace librarian
+} // namespace librarian
 </pre>
 
   </li><li>Do not use inline namespaces.</li>
@@ -570,7 +565,7 @@ Do not use internal linkage in <code>.h</code> files.</p>
 
 <pre>namespace {
 ...
-}  // namespace
+} // namespace
 </pre>
 
 <h3 id="Nonmember,_Static_Member,_and_Global_Functions">Nonmember, Static Member, and Global Functions</h3>
@@ -649,8 +644,8 @@ out of scope.</p>
 
 <pre class="badcode">// Inefficient implementation:
 for (int i = 0; i &lt; 1000000; ++i) {
-  Foo f;  // My ctor and dtor get called 1000000 times each.
-  f.DoSomething(i);
+    Foo f;  // My ctor and dtor get called 1000000 times each.
+    f.DoSomething(i);
 }
 </pre>
 
@@ -659,7 +654,7 @@ used in a loop outside that loop:</p>
 
 <pre>Foo f;  // My ctor and dtor get called once each.
 for (int i = 0; i &lt; 1000000; ++i) {
-  f.DoSomething(i);
+    f.DoSomething(i);
 }
 </pre>
 
@@ -737,7 +732,7 @@ struct X { int n; };
 const X kX[] = {{1}, {2}, {3}};  // allowed
 
 void foo() {
-  static const char* const kMessages[] = {"hello", "world"};  // allowed
+    static const char* const kMessages[] = {"hello", "world"};  // allowed
 }
 
 // allowed: constexpr guarantees trivial destructor
@@ -750,8 +745,8 @@ const std::string kFoo = "foo";
 const std::string&amp; kBar = StrCat("a", "b", "c");
 
 void bar() {
-  // bad: non-trivial destructor
-  static std::map&lt;int, int&gt; kData = {{1, 0}, {2, 0}, {3, 0}};
+    // bad: non-trivial destructor
+    static std::map&lt;int, int&gt; kData = {{1, 0}, {2, 0}, {3, 0}};
 }</pre>
 
 <p>Note that references are not objects, and thus they are not subject to the
@@ -780,8 +775,8 @@ constructor call, then the constructor must be specified as
 <code>constexpr</code>, too:</p>
 <pre>struct Foo { constexpr Foo(int) {} };
 
-int n = 5;  // fine, 5 is a constant expression
-Foo x(2);   // fine, 2 is a constant expression and the chosen constructor is constexpr
+int n = 5; // fine, 5 is a constant expression
+Foo x(2);  // fine, 2 is a constant expression and the chosen constructor is constexpr
 Foo a[] = { Foo(1), Foo(2), Foo(3) };  // fine</pre>
 
 <p>Constant initialization is always allowed. Constant initialization of
