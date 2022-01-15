@@ -2,28 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Google C++ Style Guide</title>
+<title>Lau Yee-Yu C++ Style Guide</title>
 <link rel="stylesheet" href="include/styleguide.css">
 <script src="include/styleguide.js"></script>
-<link rel="shortcut icon" href="https://www.google.com/favicon.ico">
 </head>
 <body onload="initStyleGuide();">
 <div id="content">
-<h1>Google C++ Style Guide</h1>
+<h1>Lau Yee-Yu C++ Style Guide</h1>
 <div class="horizontal_toc" id="tocDiv"></div>
 
 <h2 id="Background" class="ignoreLink">Background</h2>
 
-<p>C++ is one of the main development languages  used by
-many of Google's open-source projects. As every C++
-programmer knows, the language has many powerful features, but
-this power brings with it complexity, which in turn can make
-code more bug-prone and harder to read and maintain.</p>
+<p>Powerful as C++ is, this power brings with it complexity, which in 
+turn can make code more bug-prone and harder to read and maintain.</p>
 
 <p>The goal of this guide is to manage this complexity by
-describing in detail the dos and don'ts of writing C++ code
-. These rules exist to
-keep  the code base manageable while still allowing
+describing in detail the dos and don'ts of writing C++ code.
+These rules exist to keep the code base manageable while still allowing
 coders to use C++ language features productively.</p>
 
 <p><em>Style</em>, also known as readability, is what we call
@@ -31,145 +26,12 @@ the conventions that govern our C++ code. The term Style is a
 bit of a misnomer, since these conventions cover far more than
 just source file formatting.</p>
 
-<p>
-Most open-source projects developed by
-Google conform to the requirements in this guide.
-</p>
-
-
-
-<p>Note that this guide is not a C++ tutorial: we assume that
-the reader is familiar with the language. </p>
-
-<h3 id="Goals">Goals of the Style Guide</h3>
-
-<p>Why do we have this document?</p>
-
-<p>There are a few core goals that we believe this guide should
-serve. These are the fundamental <b>why</b>s that
-underlie all of the individual rules. By bringing these ideas to
-the fore, we hope to ground discussions and make it clearer to our
-broader community why the rules are in place and why particular
-decisions have been made. If you understand what goals each rule is
-serving, it should be clearer to everyone when a rule may be waived
-(some can be), and what sort of argument or alternative would be
-necessary to change a rule in the guide.</p>
-
-<p>The goals of the style guide as we currently see them are as follows:</p>
-<dl>
-<dt>Style rules should pull their weight</dt>
-<dd>The benefit of a style rule
-must be large enough to justify asking all of our engineers to
-remember it. The benefit is measured relative to the codebase we would
-get without the rule, so a rule against a very harmful practice may
-still have a small benefit if people are unlikely to do it
-anyway. This principle mostly explains the rules we don’t have, rather
-than the rules we do: for example, <code>goto</code> contravenes many
-of the following principles, but is already vanishingly rare, so the Style
-Guide doesn’t discuss it.</dd>
-
-<dt>Optimize for the reader, not the writer</dt>
-<dd>Our codebase (and most individual components submitted to it) is
-expected to continue for quite some time. As a result, more time will
-be spent reading most of our code than writing it. We explicitly
-choose to optimize for the experience of our average software engineer
-reading, maintaining, and debugging code in our codebase rather than
-ease when writing said code.  "Leave a trace for the reader" is a
-particularly common sub-point of this principle: When something
-surprising or unusual is happening in a snippet of code (for example,
-transfer of pointer ownership), leaving textual hints for the reader
-at the point of use is valuable (<code>std::unique_ptr</code>
-demonstrates the ownership transfer unambiguously at the call
-site). </dd>
-
-<dt>Be consistent with existing code</dt>
-<dd>Using one style consistently through our codebase lets us focus on
-other (more important) issues. Consistency also allows for automation:
-tools that format your code or adjust your <code>#include</code>s only
-work properly when your code is consistent with the expectations of
-the tooling. In many cases, rules that are attributed to "Be
-Consistent" boil down to "Just pick one and stop worrying about it";
-the potential value of allowing flexibility on these points is
-outweighed by the cost of having people argue over them. However,
-there are limits to consistency; it is a good tie breaker when there
-is no clear technical argument, nor a long-term direction. It applies
-more heavily locally (per file, or for a tightly-related set of
-interfaces). Consistency should not generally be used as a
-justification to do things in an old style without considering the
-benefits of the new style, or the tendency of the codebase to converge
-on newer styles over time.</dd>
-
-<dt>Be consistent with the broader C++ community when appropriate</dt>
-<dd>Consistency with the way other organizations use C++ has value for
-the same reasons as consistency within our code base. If a feature in
-the C++ standard solves a problem, or if some idiom is widely known
-and accepted, that's an argument for using it. However, sometimes
-standard features and idioms are flawed, or were just designed without
-our codebase's needs in mind. In those cases (as described below) it's
-appropriate to constrain or ban standard features.  In some cases we
-prefer a homegrown or third-party library over a library defined in
-the C++ Standard, either out of perceived superiority or insufficient
-value to transition the codebase to the standard interface.</dd>
-
-<dt>Avoid surprising or dangerous constructs</dt>
-<dd>C++ has features that are more surprising or dangerous than one
-might think at a glance. Some style guide restrictions are in place to
-prevent falling into these pitfalls. There is a high bar for style
-guide waivers on such restrictions, because waiving such rules often
-directly risks compromising program correctness.
-</dd>
-
-<dt>Avoid constructs that our average C++ programmer would find tricky
-or hard to maintain</dt>
-<dd>C++ has features that may not be generally appropriate because of
-the complexity they introduce to the code. In widely used
-code, it may be more acceptable to use
-trickier language constructs, because any benefits of more complex
-implementation are multiplied widely by usage, and the cost in understanding
-the complexity does not need to be paid again when working with new
-portions of the codebase. When in doubt, waivers to rules of this type
-can be sought by asking
-your project leads. This is specifically
-important for our codebase because code ownership and team membership
-changes over time: even if everyone that works with some piece of code
-currently understands it, such understanding is not guaranteed to hold a
-few years from now.</dd>
-
-<dt>Be mindful of our scale</dt>
-<dd>With a codebase of 100+ million lines and thousands of engineers,
-some mistakes and simplifications for one engineer can become costly
-for many. For instance it's particularly important to
-avoid polluting the global namespace: name collisions across a
-codebase of hundreds of millions of lines are difficult to work with
-and hard to avoid if everyone puts things into the global
-namespace.</dd>
-
-<dt>Concede to optimization when necessary</dt>
-<dd>Performance optimizations can sometimes be necessary and
-appropriate, even when they conflict with the other principles of this
-document.</dd>
-</dl>
-
-<p>The intent of this document is to provide maximal guidance with
-reasonable restriction. As always, common sense and good taste should
-prevail. By this we specifically refer to the established conventions
-of the entire Google C++ community, not just your personal preferences
-or those of your team. Be skeptical about and reluctant to use
-clever or unusual constructs: the absence of a prohibition is not the
-same as a license to proceed.  Use your judgment, and if you are
-unsure, please don't hesitate to ask your project leads to get additional
-input.</p>
-
-
-
 <h2 id="C++_Version">C++ Version</h2>
 
 <p>Currently, code should target C++17, i.e., should not use C++2x
   features, with the exception of <a href="#Designated_initializers">designated
   initializers</a>. The C++ version targeted by this guide will advance
   (aggressively) over time.</p>
-
-
 
 <p>Do not use
   <a href="#Nonstandard_Extensions">non-standard extensions</a>.</p>
@@ -180,9 +42,9 @@ before using features from C++14 and C++17 in your project.
 
 <h2 id="Header_Files">Header Files</h2>
 
-<p>In general, every <code>.cc</code> file should have an
+<p>In general, every <code>.cpp</code> file should have an
 associated <code>.h</code> file. There are some common
-exceptions, such as unit tests and small <code>.cc</code> files containing
+exceptions, such as unit tests and small <code>.cpp</code> files containing
 just a <code>main()</code> function.</p>
 
 <p>Correct use of header files can make a huge difference to
@@ -206,7 +68,7 @@ other headers it needs.</p>
 
 <p>Prefer placing the definitions for template and inline functions in
 the same file as their declarations.  The definitions of these
-constructs must be included into every <code>.cc</code> file that uses
+constructs must be included into every <code>.cpp</code> file that uses
 them, or the program may fail to link in some build configurations.  If
 declarations and definitions are in different files, including the
 former should transitively include the latter.  Do not move these
@@ -216,7 +78,7 @@ this practice was common in the past, but is no longer allowed.</p>
 <p>As an exception, a template that is explicitly instantiated for
 all relevant sets of template arguments, or that is a private
 implementation detail of a class, is allowed to be defined in the one
-and only <code>.cc</code> file that instantiates the template.</p>
+and only <code>.cpp</code> file that instantiates the template.</p>
 
 <p>There are rare cases where a file designed to be included is not
 self-contained.  These are typically intended to be included at unusual
@@ -265,14 +127,14 @@ include header files for any other reason.
 <p>Do not rely on transitive inclusions. This allows people to remove
 no-longer-needed <code>#include</code> statements from their headers without
 breaking clients. This also applies to related headers
-- <code>foo.cc</code> should include <code>bar.h</code> if it uses a
+- <code>foo.cpp</code> should include <code>bar.h</code> if it uses a
 symbol from it even if <code>foo.h</code>
 includes <code>bar.h</code>.</p>
 
 <h3 id="Forward_Declarations">Forward Declarations</h3>
 
 <p>Avoid using forward declarations where possible.
-  Instead, <a href="#Include_What_You_Use">include the headers you need</a>.
+Instead, <a href="#Include_What_You_Use">include the headers you need</a>.
 </p>
 
 
@@ -304,9 +166,9 @@ ABSL_DECLARE_FLAG(flag_in_b);
   user code to skip necessary recompilation when headers
   change.</li>
 
-  <li>A forward declaration as opposed to an #include statement
-    makes it difficult for automatic tooling to discover the module
-    defining the symbol.</li>
+  <li>A forward declaration as opposed to an <code>#include</code> 
+    statement makes it difficult for automatic tooling to discover 
+    the module defining the symbol.</li>
 
   <li>A forward declaration may be broken by subsequent
   changes to the library. Forward declarations of functions
@@ -327,7 +189,7 @@ ABSL_DECLARE_FLAG(flag_in_b);
 struct B {};
 struct D : B {};
 
-// good_user.cc:
+// good_user.cpp:
 #include "b.h"
 void f(B*);
 void f(void*);
@@ -359,8 +221,8 @@ defined in another project.</p>
 lines or fewer.</p>
 
 <p class="definition"></p>
-<p>You can declare functions in a way that allows the compiler to expand
-them inline rather than calling them through the usual
+<p>You can declare functions in a way that allows the compiler 
+to expand them inline rather than calling them through the usual
 function call mechanism.</p>
 
 <p class="pros"></p>
@@ -418,8 +280,8 @@ should be included as:</p>
 <pre>#include "base/logging.h"
 </pre>
 
-<p>In <code><var>dir/foo</var>.cc</code> or
-<code><var>dir/foo_test</var>.cc</code>, whose main
+<p>In <code><var>dir/foo</var>.cpp</code> or
+<code><var>dir/foo_test</var>.cpp</code>, whose main
 purpose is to implement or test the stuff in
 <code><var>dir2/foo2</var>.h</code>, order your includes
 as follows:</p>
@@ -455,15 +317,15 @@ as follows:</p>
 
 <p>With the preferred ordering, if the related header
 <code><var>dir2/foo2</var>.h</code> omits any necessary
-includes, the build of <code><var>dir/foo</var>.cc</code>
-or <code><var>dir/foo</var>_test.cc</code> will break.
+includes, the build of <code><var>dir/foo</var>.cpp</code>
+or <code><var>dir/foo</var>_test.cpp</code> will break.
 Thus, this rule ensures that build breaks show up first
 for the people working on these files, not for innocent
 people in other packages.</p>
 
-<p><code><var>dir/foo</var>.cc</code> and
+<p><code><var>dir/foo</var>.cpp</code> and
 <code><var>dir2/foo2</var>.h</code> are usually in the same
-directory (e.g., <code>base/basictypes_test.cc</code> and
+directory (e.g., <code>base/basictypes_test.cpp</code> and
 <code>base/basictypes.h</code>), but may sometimes be in different
 directories too.</p>
 
@@ -480,7 +342,7 @@ this rule and should be fixed when convenient.</p>
 
 <p>For example, the includes in
 
-<code>google-awesome-project/src/foo/internal/fooserver.cc</code>
+<code>google-awesome-project/src/foo/internal/fooserver.cpp</code>
 might look like this:</p>
 
 <pre>#include "foo/server/fooserver.h"
@@ -602,7 +464,7 @@ class MyClass {
 }  // namespace mynamespace
 </pre>
 
-<pre>// In the .cc file
+<pre>// In the .cpp file
 namespace mynamespace {
 
 // Definition of functions is within scope of the namespace.
@@ -613,7 +475,7 @@ void MyClass::Foo() {
 }  // namespace mynamespace
 </pre>
 
-  <p>More complex <code>.cc</code> files might have additional details,
+  <p>More complex <code>.cpp</code> files might have additional details,
   like flags or using-declarations.</p>
 
 <pre>#include "a.h"
@@ -661,7 +523,7 @@ using namespace foo;
   in a header file becomes part of the public
   API exported by that file.</p>
 
-<pre>// Shorten access to some commonly used names in .cc files.
+<pre>// Shorten access to some commonly used names in .cpp files.
 namespace baz = ::foo::bar::baz;
 </pre>
 
@@ -685,7 +547,7 @@ inline void my_inline_function() {
 <a id="Unnamed_Namespaces_and_Static_Variables"></a>
 <h3 id="Internal_Linkage">Internal Linkage</h3>
 
-<p>When definitions in a <code>.cc</code> file do not need to be
+<p>When definitions in a <code>.cpp</code> file do not need to be
 referenced outside that file, give them internal linkage by placing
 them in an unnamed namespace or declaring them <code>static</code>.
 Do not use either of these constructs in <code>.h</code> files.
@@ -699,7 +561,7 @@ the same name, then the two entities are completely independent.</p>
 
 <p class="decision"></p>
 
-<p>Use of internal linkage in <code>.cc</code> files is encouraged
+<p>Use of internal linkage in <code>.cpp</code> files is encouraged
 for all code that does not need to be referenced elsewhere.
 Do not use internal linkage in <code>.h</code> files.</p>
 
@@ -740,7 +602,7 @@ this is no different than just giving the names a
 common prefix, and such grouping is usually unnecessary anyway.</p>
 
 <p>If you define a nonmember function and it is only
-needed in its <code>.cc</code> file, use
+needed in its <code>.cpp</code> file, use
 <a href="#Internal_Linkage">internal linkage</a> to limit
 its scope.</p>
 
@@ -1632,7 +1494,7 @@ built-in operators. For example, use <code>|</code> as a
 bitwise- or logical-or, not as a shell-style pipe.</p>
 
 <p>Define operators only on your own types. More precisely,
-define them in the same headers, .cc files, and namespaces
+define them in the same headers, .cpp files, and namespaces
 as the types they operate on. That way, the operators are available
 wherever the type is, minimizing the risk of multiple
 definitions. If possible, avoid defining operators as templates,
@@ -1684,13 +1546,13 @@ apply to operator overloading as well.</p>
 of some easy boilerplate in the form of accessors (usually <code>const</code>) if necessary.</p>
 
 <p>For technical
-reasons, we allow data members of a test fixture class defined in a .cc file to
+reasons, we allow data members of a test fixture class defined in a .cpp file to
 be <code>protected</code> when using
 
 
 <a href="https://github.com/google/googletest">Google
 Test</a>.
-If a test fixture class is defined outside of the .cc file it is used in, for example in a .h file,
+If a test fixture class is defined outside of the .cpp file it is used in, for example in a .h file,
 make data members <code>private</code>.</p>
 
 <h3 id="Declaration_Order">Declaration Order</h3>
@@ -3898,7 +3760,7 @@ using other_namespace::Foo;
 
   <p>Like other declarations, aliases declared in a header file are part of that
   header's public API unless they're in a function definition, in the private portion of a class,
-  or in an explicitly-marked internal namespace. Aliases in such areas or in .cc files are
+  or in an explicitly-marked internal namespace. Aliases in such areas or in .cpp files are
   implementation details (because client code can't refer to them), and are not restricted by this
   rule.</p>
 
@@ -3960,9 +3822,9 @@ typedef unordered_set&lt;DataPoint, hash&lt;DataPoint&gt;, DataPointComparator&g
 </pre>
 
 <p>However, local convenience aliases are fine in function definitions, private sections of
-  classes, explicitly marked internal namespaces, and in .cc files:</p>
+  classes, explicitly marked internal namespaces, and in .cpp files:</p>
 
-<pre>// In a .cc file
+<pre>// In a .cpp file
 using ::foo::Bar;
 </pre>
 
@@ -4083,13 +3945,13 @@ local pattern to follow, prefer "_".</p>
 <p>Examples of acceptable file names:</p>
 
 <ul>
-  <li><code>my_useful_class.cc</code></li>
-  <li><code>my-useful-class.cc</code></li>
-  <li><code>myusefulclass.cc</code></li>
-  <li><code>myusefulclass_test.cc // _unittest and _regtest are deprecated.</code></li>
+  <li><code>my_useful_class.cpp</code></li>
+  <li><code>my-useful-class.cpp</code></li>
+  <li><code>myusefulclass.cpp</code></li>
+  <li><code>myusefulclass_test.cpp // _unittest and _regtest are deprecated.</code></li>
 </ul>
 
-<p>C++ files should end in <code>.cc</code> and header files should end in
+<p>C++ files should end in <code>.cpp</code> and header files should end in
 <code>.h</code>. Files that rely on being textually included at specific points
 should end in <code>.inc</code> (see also the section on
 <a href="#Self_contained_Headers">self-contained headers</a>).</p>
@@ -4101,7 +3963,7 @@ should end in <code>.inc</code> (see also the section on
 example, use <code>http_server_logs.h</code> rather than
 <code>logs.h</code>. A very common case is to have a pair
 of files called, e.g., <code>foo_bar.h</code> and
-<code>foo_bar.cc</code>, defining a class called
+<code>foo_bar.cpp</code>, defining a class called
 <code>FooBar</code>.</p>
 
 <h3 id="Type_Names">Type Names</h3>
@@ -4389,7 +4251,7 @@ documentation about individual abstractions belongs with those abstractions,
 not at the file level.</p>
 
 <p>Do not duplicate comments in both the <code>.h</code> and the
-<code>.cc</code>. Duplicated comments diverge.</p>
+<code>.cpp</code>. Duplicated comments diverge.</p>
 
 <h3 id="Class_Comments">Class Comments</h3>
 
@@ -4418,7 +4280,7 @@ surrounding multithreaded use.</p>
 <p>The class comment is often a good place for a small example code snippet
 demonstrating a simple and focused usage of the class.</p>
 
-<p>When sufficiently separated (e.g., <code>.h</code> and <code>.cc</code>
+<p>When sufficiently separated (e.g., <code>.h</code> and <code>.cpp</code>
 files), comments describing the use of the class should go together with its
 interface definition; comments about the class operation and implementation
 should accompany the implementation of the class's methods.</p>
@@ -4435,7 +4297,7 @@ operation.</p>
 preceding it that describe what the function does and how to use
 it. These comments may be omitted only if the function is simple and
 obvious (e.g., simple accessors for obvious properties of the class).
-Private methods and functions declared in `.cc` files are not exempt.
+Private methods and functions declared in `.cpp` files are not exempt.
 Function comments should be written with an implied subject of
 <i>This function</i> and should start with the verb phrase; for example,
 "Opens the file", rather than "Open the file". In general, these comments do not
@@ -5720,7 +5582,7 @@ style:</p>
 <ul>
   <li>Do not use Hungarian notation (for example, naming
   an integer <code>iNum</code>). Use the Google naming
-  conventions, including the <code>.cc</code> extension
+  conventions, including the <code>.cpp</code> extension
   for source files.</li>
 
   <li>Windows defines many of its own synonyms for
@@ -5779,7 +5641,7 @@ occasionally need to break on Windows:</p>
   file, typically with a name like <code>StdAfx.h</code>
   or <code>precompile.h</code>. To make your code easier
   to share with other projects, avoid including this file
-  explicitly (except in <code>precompile.cc</code>), and
+  explicitly (except in <code>precompile.cpp</code>), and
   use the <code>/FI</code> compiler option to include the
   file automatically.</li>
 
