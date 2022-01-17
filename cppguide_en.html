@@ -991,9 +991,8 @@ of the constructor.</p>
 
 <p class="decision"></p>
 <p>Constructors should never call virtual functions. If appropriate
-for your code ,
-terminating the program may be an appropriate error handling
-response. Otherwise, consider a factory function
+for your code, terminating the program may be an appropriate error
+handling response. Otherwise, consider a factory function
 or <code>Init()</code> method as described in
 <a href="https://abseil.io/tips/42">TotW #42</a>
 .
@@ -1200,37 +1199,35 @@ permitted, but not required. If you provide a copy or move assignment operator,
 you must also provide the corresponding constructor.</p>
 
 <pre>class Copyable {
- public:
-  Copyable(const Copyable&amp; other) = default;
-  Copyable&amp; operator=(const Copyable&amp; other) = default;
+public:
+    Copyable(const Copyable&amp; other) = default;
+    Copyable&amp; operator=(const Copyable&amp; other) = default;
 
-  // The implicit move operations are suppressed by the declarations above.
-  // You may explicitly declare move operations to support efficient moves.
+    // The implicit move operations are suppressed by the declarations above.
+    // You may explicitly declare move operations to support efficient moves.
 };
 
 class MoveOnly {
- public:
-  MoveOnly(MoveOnly&amp;&amp; other) = default;
-  MoveOnly&amp; operator=(MoveOnly&amp;&amp; other) = default;
+public:
+    MoveOnly(MoveOnly&amp;&amp; other) = default;
+    MoveOnly&amp; operator=(MoveOnly&amp;&amp; other) = default;
 
-  // The copy operations are implicitly deleted, but you can
-  // spell that out explicitly if you want:
-  MoveOnly(const MoveOnly&amp;) = delete;
-  MoveOnly&amp; operator=(const MoveOnly&amp;) = delete;
+    // The copy operations are implicitly deleted, but you can
+    // spell that out explicitly if you want:
+    MoveOnly(const MoveOnly&amp;) = delete;
+    MoveOnly&amp; operator=(const MoveOnly&amp;) = delete;
 };
 
 class NotCopyableOrMovable {
- public:
-  // Not copyable or movable
-  NotCopyableOrMovable(const NotCopyableOrMovable&amp;) = delete;
-  NotCopyableOrMovable&amp; operator=(const NotCopyableOrMovable&amp;)
-      = delete;
+public:
+    // Not copyable or movable
+    NotCopyableOrMovable(const NotCopyableOrMovable&amp;) = delete;
+    NotCopyableOrMovable&amp; operator=(const NotCopyableOrMovable&amp;) = delete;
 
-  // The move operations are implicitly disabled, but you can
-  // spell that out explicitly if you want:
-  NotCopyableOrMovable(NotCopyableOrMovable&amp;&amp;) = delete;
-  NotCopyableOrMovable&amp; operator=(NotCopyableOrMovable&amp;&amp;)
-      = delete;
+    // The move operations are implicitly disabled, but you can
+    // spell that out explicitly if you want:
+    NotCopyableOrMovable(NotCopyableOrMovable&amp;&amp;) = delete;
+    NotCopyableOrMovable&amp; operator=(NotCopyableOrMovable&amp;&amp;) = delete;
 };
 </pre>
 
@@ -1540,16 +1537,6 @@ apply to operator overloading as well.</p>
 <a href="#Constant_Names">constants</a>. This simplifies reasoning about invariants, at the cost
 of some easy boilerplate in the form of accessors (usually <code>const</code>) if necessary.</p>
 
-<p>For technical
-reasons, we allow data members of a test fixture class defined in a .cpp file to
-be <code>protected</code> when using
-
-
-<a href="https://github.com/google/googletest">Google
-Test</a>.
-If a test fixture class is defined outside of the .cpp file it is used in, for example in a .h file,
-make data members <code>private</code>.</p>
-
 <h3 id="Declaration_Order">Declaration Order</h3>
 
 <p>Group similar declarations together, placing public parts
@@ -1660,9 +1647,9 @@ std::string_view
  instead.</p>
 
 <pre>class MyClass {
- public:
-  void Analyze(const std::string &amp;text);
-  void Analyze(const char *text, size_t textlen);
+public:
+    void Analyze(const std::string &amp;text);
+    void Analyze(const char *text, size_t textlen);
 };
 </pre>
 
@@ -1801,169 +1788,6 @@ doubt, use overloads.</p>
   more readable way. The latter case should be rare; it's mostly an
   issue in fairly complicated template code, which is
   <a href="#Template_metaprogramming">discouraged in most cases</a>.</p>
-
-
-<h2 id="Google-Specific_Magic">Google-Specific Magic</h2>
-
-
-
-<div>
-<p>There are various tricks and utilities that
-we use to make C++ code more robust, and various ways we use
-C++ that may differ from what you see elsewhere.</p>
-</div>
-
-
-
-<h3 id="Ownership_and_Smart_Pointers">Ownership and Smart Pointers</h3>
-
-<p>Prefer to have single, fixed owners for dynamically
-allocated objects. Prefer to transfer ownership with smart
-pointers.</p>
-
-<p class="definition"></p>
-<p>"Ownership" is a bookkeeping technique for managing
-dynamically allocated memory (and other resources). The
-owner of a dynamically allocated object is an object or
-function that is responsible for ensuring that it is
-deleted when no longer needed. Ownership can sometimes be
-shared, in which case the last owner is typically
-responsible for deleting it. Even when ownership is not
-shared, it can be transferred from one piece of code to
-another.</p>
-
-<p>"Smart" pointers are classes that act like pointers,
-e.g., by overloading the <code>*</code> and
-<code>-&gt;</code> operators. Some smart pointer types
-can be used to automate ownership bookkeeping, to ensure
-these responsibilities are met.
-<a href="http://en.cppreference.com/w/cpp/memory/unique_ptr">
-<code>std::unique_ptr</code></a> is a smart pointer type
-which expresses exclusive ownership
-of a dynamically allocated object; the object is deleted
-when the <code>std::unique_ptr</code> goes out of scope.
-It cannot be copied, but can be <em>moved</em> to
-represent ownership transfer.
-<a href="http://en.cppreference.com/w/cpp/memory/shared_ptr">
-<code>std::shared_ptr</code></a> is a smart pointer type
-that expresses shared ownership of
-a dynamically allocated object. <code>std::shared_ptr</code>s
-can be copied; ownership of the object is shared among
-all copies, and the object is deleted when the last
-<code>std::shared_ptr</code> is destroyed. </p>
-
-<p class="pros"></p>
-<ul>
-  <li>It's virtually impossible to manage dynamically
-  allocated memory without some sort of ownership
-  logic.</li>
-
-  <li>Transferring ownership of an object can be cheaper
-  than copying it (if copying it is even possible).</li>
-
-  <li>Transferring ownership can be simpler than
-  'borrowing' a pointer or reference, because it reduces
-  the need to coordinate the lifetime of the object
-  between the two users.</li>
-
-  <li>Smart pointers can improve readability by making
-  ownership logic explicit, self-documenting, and
-  unambiguous.</li>
-
-  <li>Smart pointers can eliminate manual ownership
-  bookkeeping, simplifying the code and ruling out large
-  classes of errors.</li>
-
-  <li>For const objects, shared ownership can be a simple
-  and efficient alternative to deep copying.</li>
-</ul>
-
-<p class="cons"></p>
-<ul>
-  <li>Ownership must be represented and transferred via
-  pointers (whether smart or plain). Pointer semantics
-  are more complicated than value semantics, especially
-  in APIs: you have to worry not just about ownership,
-  but also aliasing, lifetime, and mutability, among
-  other issues.</li>
-
-  <li>The performance costs of value semantics are often
-  overestimated, so the performance benefits of ownership
-  transfer might not justify the readability and
-  complexity costs.</li>
-
-  <li>APIs that transfer ownership force their clients
-  into a single memory management model.</li>
-
-  <li>Code using smart pointers is less explicit about
-  where the resource releases take place.</li>
-
-  <li><code>std::unique_ptr</code> expresses ownership
-  transfer using move semantics, which are
-  relatively new and may confuse some programmers.</li>
-
-  <li>Shared ownership can be a tempting alternative to
-  careful ownership design, obfuscating the design of a
-  system.</li>
-
-  <li>Shared ownership requires explicit bookkeeping at
-  run-time, which can be costly.</li>
-
-  <li>In some cases (e.g., cyclic references), objects
-  with shared ownership may never be deleted.</li>
-
-  <li>Smart pointers are not perfect substitutes for
-  plain pointers.</li>
-</ul>
-
-<p class="decision"></p>
-<p>If dynamic allocation is necessary, prefer to keep
-ownership with the code that allocated it. If other code
-needs access to the object, consider passing it a copy,
-or passing a pointer or reference without transferring
-ownership. Prefer to use <code>std::unique_ptr</code> to
-make ownership transfer explicit. For example:</p>
-
-<pre>std::unique_ptr&lt;Foo&gt; FooFactory();
-void FooConsumer(std::unique_ptr&lt;Foo&gt; ptr);
-</pre>
-
-
-
-<p>Do not design your code to use shared ownership
-without a very good reason. One such reason is to avoid
-expensive copy operations, but you should only do this if
-the performance benefits are significant, and the
-underlying object is immutable (i.e.,
-<code>std::shared_ptr&lt;const Foo&gt;</code>).  If you
-do use shared ownership, prefer to use
-<code>std::shared_ptr</code>.</p>
-
-<p>Never use <code>std::auto_ptr</code>. Instead, use
-<code>std::unique_ptr</code>.</p>
-
-<h3 id="cpplint">cpplint</h3>
-
-<p>Use <code>cpplint.py</code> to detect style errors.</p>
-
-<p><code>cpplint.py</code>
-is a tool that reads a source file and identifies many
-style errors. It is not perfect, and has both false
-positives and false negatives, but it is still a valuable
-tool. </p>
-
-
-
-<div>
-<p>Some projects have instructions on
-how to run <code>cpplint.py</code> from their project
-tools. If the project you are contributing to does not,
-you can download
-<a href="https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py">
-<code>cpplint.py</code></a> separately.</p>
-</div>
-
-
 
 <h2 id="Other_C++_Features">Other C++ Features</h2>
 
@@ -2161,27 +1985,15 @@ for existing code, the introduction of exceptions has
 implications on all dependent code. If exceptions can be
 propagated beyond a new project, it also becomes
 problematic to integrate the new project into existing
-exception-free code. Because most existing C++ code at
-Google is not prepared to deal with exceptions, it is
-comparatively difficult to adopt new code that generates
-exceptions.</p>
+exception-free code.</p>
 
-<p>Given that Google's existing code is not
+<p>Given that most existing code is not
 exception-tolerant, the costs of using exceptions are
 somewhat greater than the costs in a new project. The
 conversion process would be slow and error-prone. We
 don't believe that the available alternatives to
 exceptions, such as error codes and assertions, introduce
 a significant burden. </p>
-
-<p>Our advice against using exceptions is not predicated
-on philosophical or moral grounds, but practical ones.
- Because we'd like to use our open-source
-projects at Google and it's difficult to do so if those
-projects use exceptions, we need to advise against
-exceptions in Google open-source projects as well.
-Things would probably be different if we had to do it all
-over again from scratch.</p>
 
 <p>This prohibition also applies to exception handling related
 features such as <code>std::exception_ptr</code> and
@@ -2260,7 +2072,7 @@ move-constructing objects), or on whether allocation can throw
 standard default allocation). Note in many cases the only
 possible cause for an exception is allocation failure (we
 believe move constructors should not throw except due to
-allocation failure), and there are many applications where it’s
+allocation failure), and there are many applications where it's
 appropriate to treat memory exhaustion as a fatal error rather
 than an exceptional condition that your program should attempt
 to recover from.  Even for other
@@ -2268,7 +2080,7 @@ potential failures you should prioritize interface simplicity
 over supporting all possible exception throwing scenarios:
 instead of writing a complicated <code>noexcept</code> clause
 that depends on whether a hash function can throw, for example,
-simply document that your component doesn’t support hash
+simply document that your component doesn't support hash
 functions throwing and make it unconditionally
 <code>noexcept</code>.</p>
 
@@ -2300,11 +2112,11 @@ relationship between objects and their mocks.</p>
 objects. Consider</p>
 
 <pre>bool Base::Equal(Base* other) = 0;
+
 bool Derived::Equal(Base* other) {
-  Derived* that = dynamic_cast&lt;Derived*&gt;(other);
-  if (that == nullptr)
-    return false;
-  ...
+    Derived* that = dynamic_cast&lt;Derived*&gt;(other);
+    if (that == nullptr) return false;
+    ...
 }
 </pre>
 
@@ -2353,11 +2165,12 @@ such situations.</p>
 that your code is on the wrong track.</p>
 
 <pre class="badcode">if (typeid(*data) == typeid(D1)) {
-  ...
+    ...
 } else if (typeid(*data) == typeid(D2)) {
-  ...
+    ...
 } else if (typeid(*data) == typeid(D3)) {
-...
+    ...
+}
 </pre>
 
 <p>Code such as this usually breaks when additional
@@ -2655,7 +2468,7 @@ be clearly documented as "thread-unsafe".</p>
 
 <h4>Where to put the const</h4>
 
-<p>Some people favor the form <code>int const *foo</code>
+<p>Some people favor the form <code>int const* foo</code>
 to <code>const int* foo</code>. They argue that this is
 more readable because it's more consistent: it keeps the
 rule that <code>const</code> always follows the object
@@ -2778,7 +2591,7 @@ other problems.</p>
 
 <p>Unsigned integers are good for representing bitfields and modular
 arithmetic. Because of historical accident, the C++ standard also uses
-unsigned integers to represent the size of containers - many members
+unsigned integers to represent the size of containers — many members
 of the standards body believe this to be a mistake, but it is
 effectively impossible to fix at this point. The fact that unsigned
 arithmetic doesn't model the behavior of a simple integer, but is
@@ -2882,12 +2695,12 @@ specifically disallow using macros in this way.
 For example, avoid patterns like:</p>
 
 <pre class="badcode">class WOMBAT_TYPE(Foo) {
-  // ...
+    // ...
 
- public:
-  EXPAND_PUBLIC_WOMBAT_API(Foo)
+public:
+    EXPAND_PUBLIC_WOMBAT_API(Foo)
 
-  EXPAND_WOMBAT_COMPARISONS(Foo, ==, &lt;)
+    EXPAND_WOMBAT_COMPARISONS(Foo, ==, &lt;)
 };
 </pre>
 
@@ -2971,7 +2784,8 @@ take the size of a particular variable.
 appropriately if someone changes the variable type either
 now or later. You may use
 <code>sizeof(<var>type</var>)</code> for code unrelated
-to any particular variable, such as code that manages an
+to any particular variable or within your private implementation
+of APIs, such as code that manages an
 external or internal data format where a variable of an
 appropriate C++ type is not convenient.</p>
 
@@ -2983,8 +2797,8 @@ memset(&amp;data, 0, sizeof(data));
 </pre>
 
 <pre>if (raw_size &lt; sizeof(int)) {
-  LOG(ERROR) &lt;&lt; "compressed record not big enough for count: " &lt;&lt; raw_size;
-  return false;
+    LOG(ERROR) &lt;&lt; "compressed record not big enough for count: " &lt;&lt; raw_size;
+    return false;
 }
 </pre>
 
@@ -3068,7 +2882,7 @@ std::sort(vec.begin(), vec.end(), [](auto lhs, auto rhs) { return lhs &gt; rhs; 
     or the individual names:
     <pre class="neutralcode">auto [iter, success] = my_map.insert({key, value});
 if (!success) {
-  iter-&gt;second = value;
+    iter-&gt;second = value;
 }</pre>
     The <code>auto</code> can also be qualified with <code>const</code>,
     <code>&amp;</code>, and <code>&amp;&amp;</code>, but note that these qualifiers
@@ -3163,8 +2977,8 @@ std::array numbers = {4, 8, 15, 16, 23, 42};</pre>
   In such situations, it's often possible to define local variables with
   explicit types that convey the relevant information:</p>
   <pre class="goodcode">if (auto it = my_map_.find(key); it != my_map_.end()) {
-  WidgetWithBellsAndWhistles&amp; widget = *it-&gt;second;
-  // Do stuff with `widget`
+    WidgetWithBellsAndWhistles&amp; widget = *it-&gt;second;
+    // Do stuff with `widget`
 }</pre>
 <p>If the type is a template instance, and the parameters are
   boilerplate but the template itself is informative, you can use
@@ -3238,7 +3052,7 @@ std::array numbers = {4, 8, 15, 16, 23, 42};</pre>
     template argument deduction</a> (often abbreviated "CTAD") occurs when
   a variable is declared with a type that names a template, and the template
   argument list is not provided (not even empty angle brackets):</p>
-  <pre class="neutralcode">std::array a = {1, 2, 3};  // `a` is a std::array&lt;int, 3&gt;</pre>
+  <pre class="neutralcode">std::array a = {1, 2, 3}; // `a` is a std::array&lt;int, 3&gt;</pre>
 <p>The compiler deduces the arguments from the initializer using the
   template's "deduction guides", which can be explicit or implicit.</p>
 
@@ -3294,17 +3108,17 @@ array(T, U...) -&gt; std::array&lt;T, 1 + sizeof...(U)&gt;;
 <p><a href="https://en.cppreference.com/w/cpp/language/aggregate_initialization#Designated_initializers">
   Designated initializers</a> are a syntax that allows for initializing an
   aggregate ("plain old struct") by naming its fields explicitly:</p>
-  <pre class="neutralcode">  struct Point {
+  <pre class="neutralcode">struct Point {
     float x = 0.0;
     float y = 0.0;
     float z = 0.0;
-  };
+};
 
-  Point p = {
+Point p = {
     .x = 1.0,
     .y = 2.0,
     // z will be 0.0
-  };</pre>
+};</pre>
 <p>The explicitly listed fields will be initialized as specified, and others
   will be initialized in the same way they would be in a traditional aggregate
   initialization expression like <code>Point{1.0, 2.0}</code>.</p>
@@ -3343,7 +3157,7 @@ function objects. They're often useful when passing
 functions as arguments. For example:</p>
 
 <pre>std::sort(v.begin(), v.end(), [](int x, int y) {
-  return Weight(x) &lt; Weight(y);
+    return Weight(x) &lt; Weight(y);
 });
 </pre>
 
@@ -3356,7 +3170,7 @@ either a value or reference capture:</p>
 int sum = 0;
 // Captures `weight` by value and `sum` by reference.
 std::for_each(v.begin(), v.end(), [weight, &amp;sum](int x) {
-  sum += weight * x;
+    sum += weight * x;
 });
 </pre>
 
@@ -3369,7 +3183,7 @@ std::vector&lt;int&gt; indices = ...;
 // Captures `lookup_table` by reference, sorts `indices` by the value
 // of the associated element in `lookup_table`.
 std::sort(indices.begin(), indices.end(), [&amp;](int a, int b) {
-  return lookup_table[a] &lt; lookup_table[b];
+    return lookup_table[a] &lt; lookup_table[b];
 });
 </pre>
 
@@ -3378,7 +3192,7 @@ std::sort(indices.begin(), indices.end(), [&amp;](int a, int b) {
   not handled by ordinary reference or value captures:</p>
   <pre>std::unique_ptr&lt;Foo&gt; foo = ...;
 [foo = std::move(foo)] () {
-  ...
+    ...
 }</pre>
 <p>Such captures (often called "init captures" or "generalized lambda captures")
   need not actually "capture" anything from the enclosing scope, or even have
@@ -3444,10 +3258,10 @@ described <a href="#Formatting_Lambda_Expressions">below</a>.</li>
 <li>Prefer explicit captures if the lambda may escape the current scope.
 For example, instead of:
 <pre class="badcode">{
-  Foo foo;
-  ...
-  executor-&gt;Schedule([&amp;] { Frobnicate(foo); })
-  ...
+    Foo foo;
+    ...
+    executor-&gt;Schedule([&amp;] { Frobnicate(foo); })
+    ...
 }
 // BAD! The fact that the lambda makes use of a reference to `foo` and
 // possibly `this` (if `Frobnicate` is a member function) may not be
@@ -3457,10 +3271,10 @@ For example, instead of:
 </pre>
 prefer to write:
 <pre>{
-  Foo foo;
-  ...
-  executor-&gt;Schedule([&amp;foo] { Frobnicate(foo); })
-  ...
+    Foo foo;
+    ...
+    executor-&gt;Schedule([&amp;foo] { Frobnicate(foo); })
+    ...
 }
 // BETTER - The compile will fail if `Frobnicate` is a member
 // function, and it's clearer that `foo` is dangerously captured by
@@ -3503,10 +3317,8 @@ computation in the type domain.</p>
 <p class="pros"></p>
 <p>Template metaprogramming allows extremely flexible interfaces that
 are type safe and high performance. Facilities like
-
-<a href="https://github.com/google/googletest">GoogleTest</a>,
 <code>std::tuple</code>, <code>std::function</code>, and
-Boost.Spirit would be impossible without it.</p>
+Boost. Spirit would be impossible without it.</p>
 
 <p class="cons"></p>
 <p>The techniques used in template metaprogramming are often obscure
@@ -3554,7 +3366,7 @@ possible, so that user-facing headers are readable, and you should
 make sure that tricky code is especially well commented. You should
 carefully document how the code is used, and you should say something
 about what the "generated" code looks like. Pay extra attention to the
-error messages that the compiler emits when users make mistakes.  The
+error messages that the compiler emits when users make mistakes. The
 error messages are part of your user interface, and your code should
 be tweaked as necessary so that the error messages are understandable
 and actionable from a user point of view.</p>
@@ -3802,7 +3614,7 @@ using DataPoint = ::foo::Bar*;
 
 // A set of measurements. Just an alias for user convenience.
 using TimeSeries = std::unordered_set&lt;DataPoint, std::hash&lt;DataPoint&gt;, DataPointComparator&gt;;
-}  // namespace mynamespace
+} // namespace mynamespace
 </pre>
 
 <p>These aliases don't document intended use, and half of them aren't meant for client use:</p>
@@ -3810,10 +3622,10 @@ using TimeSeries = std::unordered_set&lt;DataPoint, std::hash&lt;DataPoint&gt;, 
 <pre class="badcode">namespace mynamespace {
 // Bad: none of these say how they should be used.
 using DataPoint = ::foo::Bar*;
-using ::std::unordered_set;  // Bad: just for local convenience
-using ::std::hash;           // Bad: just for local convenience
+using ::std::unordered_set; // Bad: just for local convenience
+using ::std::hash;          // Bad: just for local convenience
 typedef unordered_set&lt;DataPoint, hash&lt;DataPoint&gt;, DataPointComparator&gt; TimeSeries;
-}  // namespace mynamespace
+} // namespace mynamespace
 </pre>
 
 <p>However, local convenience aliases are fine in function definitions, private sections of
@@ -3822,21 +3634,6 @@ typedef unordered_set&lt;DataPoint, hash&lt;DataPoint&gt;, DataPointComparator&g
 <pre>// In a .cpp file
 using ::foo::Bar;
 </pre>
-
-<h2 id="Inclusive_Language">Inclusive Language</h2>
-
-<p>In all code, including naming and comments, use inclusive language
-and avoid terms that other programmers might find disrespectful or offensive
-(such as "master" and "slave", "blacklist" and "whitelist", or "redline"),
-even if the terms also have an ostensibly neutral meaning.
-Similarly, use gender-neutral language unless you're referring
-to a specific person (and using their pronouns). For example,
-use "they"/"them"/"their" for people of unspecified gender
-(<a href="https://apastyle.apa.org/style-grammar-guidelines/grammar/singular-they">even
-when singular</a>), and "it"/"its" for software, computers, and other
-things that aren't people.</p>
-
-
 
 <h2 id="Naming">Naming</h2>
 
@@ -3873,38 +3670,38 @@ proportional to the name's scope of visibility. For example,
 but within the scope of a class, it's likely too vague.</p>
 
 <pre>class MyClass {
- public:
-  int CountFooErrors(const std::vector&lt;Foo&gt;&amp; foos) {
-    int n = 0;  // Clear meaning given limited scope and context
-    for (const auto&amp; foo : foos) {
-      ...
-      ++n;
+public:
+    int CountFooErrors(const std::vector&lt;Foo&gt;&amp; foos) {
+        int n = 0; // Clear meaning given limited scope and context
+        for (const auto&amp; foo : foos) {
+            ...
+            ++n;
+        }
+        return n;
     }
-    return n;
-  }
-  void DoSomethingImportant() {
-    std::string fqdn = ...;  // Well-known abbreviation for Fully Qualified Domain Name
-  }
- private:
-  const int kMaxAllowedConnections = ...;  // Clear meaning within context
+    void DoSomethingImportant() {
+        std::string fqdn = ...; // Well-known abbreviation for Fully Qualified Domain Name
+    }
+private:
+    const int kMaxAllowedConnections = ...; // Clear meaning within context
 };
 </pre>
 
 <pre class="badcode">class MyClass {
- public:
-  int CountFooErrors(const std::vector&lt;Foo&gt;&amp; foos) {
-    int total_number_of_foo_errors = 0;  // Overly verbose given limited scope and context
-    for (int foo_index = 0; foo_index &lt; foos.size(); ++foo_index) {  // Use idiomatic `i`
-      ...
-      ++total_number_of_foo_errors;
+public:
+    int CountFooErrors(const std::vector&lt;Foo&gt;&amp; foos) {
+        int total_number_of_foo_errors = 0;  // Overly verbose given limited scope and context
+        for (int foo_index = 0; foo_index &lt; foos.size(); ++foo_index) {  // Use idiomatic `i`
+            ...
+            ++total_number_of_foo_errors;
+        }
+        return total_number_of_foo_errors;
     }
-    return total_number_of_foo_errors;
-  }
-  void DoSomethingImportant() {
-    int cstmr_id = ...;  // Deletes internal letters
-  }
- private:
-  const int kNum = ...;  // Unclear meaning within broad scope
+    void DoSomethingImportant() {
+        int cstmr_id = ...;  // Deletes internal letters
+    }
+private:
+    const int kNum = ...;  // Unclear meaning within broad scope
 };
 </pre>
 
@@ -3919,8 +3716,8 @@ sometimes referred to as
 "<a href="https://en.wikipedia.org/wiki/Camel_case">camel case</a>" or
 "<a href="https://en.wiktionary.org/wiki/Pascal_case">Pascal case</a>"), in
 which the first letter of each word is capitalized, prefer to capitalize
-abbreviations as single words, e.g., <code>StartRpc()</code> rather than
-<code>StartRPC()</code>.</p>
+all the letters of abbreviations, e.g., <code>StartRPC()</code> rather than
+<code>StartRpc()</code>.</p>
 
 <p>Template parameters should follow the naming style for their
 category: type template parameters should follow the rules for
@@ -3990,19 +3787,19 @@ enum class UrlTableError { ...
 <h3 id="Variable_Names">Variable Names</h3>
 
 <p>The names of variables (including function parameters) and data members are
-all lowercase, with underscores between words. Data members of classes (but not
+all mixed case. Data members of classes (but not
 structs) additionally have trailing underscores. For instance:
-<code>a_local_variable</code>, <code>a_struct_data_member</code>,
-<code>a_class_data_member_</code>.</p>
+<code>aLocalVariable</code>, <code>aStructDataMember</code>,
+<code>aClassDataMember</code>.</p>
 
 <h4>Common Variable names</h4>
 
 <p>For example:</p>
 
-<pre>std::string table_name;  // OK - lowercase with underscore.
+<pre>std::string tableName; // OK - mixed cases.
 </pre>
 
-<pre class="badcode">std::string tableName;   // Bad - mixed case.
+<pre class="badcode">std::string table_name; // Bad - lowercase with underline.
 </pre>
 
 <h4>Class Data Members</h4>
@@ -4012,10 +3809,10 @@ named like ordinary nonmember variables, but with a
 trailing underscore.</p>
 
 <pre>class TableInfo {
-  ...
- private:
-  std::string table_name_;  // OK - underscore at end.
-  static Pool&lt;TableInfo&gt;* pool_;  // OK.
+    ...
+private:
+    std::string tableName_; // OK - underscore at end.
+    static Pool&lt;TableInfo&gt;* pool_; // OK.
 };
 </pre>
 
@@ -4026,8 +3823,8 @@ are named like ordinary nonmember variables. They do not have
 the trailing underscores that data members in classes have.</p>
 
 <pre>struct UrlTableProperties {
-  std::string name;
-  int num_entries;
+    std::string name;
+    int numEntries;
   static Pool&lt;UrlTableProperties&gt;* pool;
 };
 </pre>
@@ -4077,20 +3874,25 @@ variables. These often correspond to actual member variables, but this is
 not required. For example, <code>int count()</code> and <code>void
 set_count(int count)</code>.</p>
 
+<p>There's an exception when you have to use other naming method for fitting
+some features in C++ language or in other libraries, like
+<code>begin()</code> and <code>end()</code> member function for supporting
+the ranger based <code>for</code> loops. Keep in mind that this is only allowed
+when you have no other choice and this makes your code much more clear and
+human readable.</p>
+
 <h3 id="Namespace_Names">Namespace Names</h3>
 
-Namespace names are all lower-case, with words separated by underscores.
-Top-level namespace names are based on the project name
-. Avoid collisions
-between nested namespaces and well-known top-level namespaces.
+<p>Namespace names are all lower-case (except the case that it
+is a proper noun), with words separated by underscores. Top-level
+namespace names are based on the project name. Avoid collisions
+between nested namespaces and well-known top-level namespaces.</p>
 
 <p>The name of a top-level namespace should usually be the
 name of the project or team whose code is contained in that
 namespace. The code in that namespace should usually be in
 a directory whose basename matches the namespace name (or in
 subdirectories thereof).</p>
-
-
 
 <p>Keep in mind that the <a href="#General_Naming_Rules">rule
 against abbreviated names</a> applies to namespaces just as much
@@ -4118,18 +3920,17 @@ in <code>frobber.h</code>).</p>
 <h3 id="Enumerator_Names">Enumerator Names</h3>
 
 <p>Enumerators (for both scoped and unscoped enums) should be named like
-<a href="#Constant_Names">constants</a>, not like
-<a href="#Macro_Names">macros</a>. That is, use <code>kEnumName</code> not
+<a href="Variable_Names">variables</a>, not like
+<a href="#Macro_Names">macros</a>. That is, use <code>enumName</code> not
 <code>ENUM_NAME</code>.</p>
 
-
-
 <pre>enum class UrlTableError {
-  kOk = 0,
-  kOutOfMemory,
-  kMalformedInput,
+  ok = 0,
+  outOfMemory,
+  malformedInput,
 };
 </pre>
+
 <pre class="badcode">enum class AlternateUrlTableError {
   OK = 0,
   OUT_OF_MEMORY = 1,
@@ -4258,7 +4059,7 @@ be used.</p>
 // Example:
 //    std::unique_ptr&lt;GargantuanTableIterator&gt; iter = table-&gt;NewIterator();
 //    for (iter-&gt;Seek("foo"); !iter-&gt;done(); iter-&gt;Next()) {
-//      process(iter-&gt;key(), iter-&gt;value());
+//        process(iter-&gt;key(), iter-&gt;value());
 //    }
 class GargantuanTableIterator {
   ...
@@ -4397,9 +4198,9 @@ of sentinel values, such as nullptr or -1, when they are not
 obvious. For example:</p>
 
 <pre>private:
- // Used to bounds-check table accesses. -1 means
- // that we don't yet know how many entries the table has.
- int num_total_entries_;
+    // Used to bounds-check table accesses. -1 means
+    // that we don't yet know how many entries the table has.
+    int numTotalEntries_;
 </pre>
 
 <h4>Global Variables</h4>
@@ -4480,7 +4281,7 @@ Compare this:
 
 <pre class="badcode">// Find the element in the vector.  &lt;-- Bad: obvious!
 if (std::find(v.begin(), v.end(), element) != v.end()) {
-  Process(element);
+    Process(element);
 }
 </pre>
 
@@ -4488,7 +4289,7 @@ To this:
 
 <pre>// Process "element" unless it was already processed.
 if (std::find(v.begin(), v.end(), element) != v.end()) {
-  Process(element);
+    Process(element);
 }
 </pre>
 
@@ -4496,7 +4297,7 @@ Self-describing code doesn't need a comment. The comment from
 the example above would be obvious:
 
 <pre>if (!IsAlreadyProcessed(element)) {
-  Process(element);
+    Process(element);
 }
 </pre>
 
@@ -4578,45 +4379,18 @@ settings file for emacs</a>.</p>
 
 <h3 id="Line_Length">Line Length</h3>
 
-<p>Each line of text in your code should be at most 80
-characters long.</p>
-
-
-
-<div>
-<p>We recognize that this rule is
-controversial, but so much existing code already adheres
-to it, and we feel that consistency is important.</p>
-</div>
-
-<p class="pros"></p>
-<p>Those who favor  this rule
-argue that it is rude to force them to resize
-their windows and there is no need for anything longer.
-Some folks are used to having several code windows
-side-by-side, and thus don't have room to widen their
-windows in any case. People set up their work environment
-assuming a particular maximum window width, and 80
-columns has been the traditional standard. Why change
-it?</p>
-
-<p class="cons"></p>
-<p>Proponents of change argue that a wider line can make
-code more readable. The 80-column limit is an hidebound
-throwback to 1960s mainframes;  modern equipment has wide screens that
-can easily show longer lines.</p>
-
-<p class="decision"></p>
-<p> 80 characters is the maximum.</p>
+<p>120 characters is the maximum length. Besides, you should be alert when
+the length of a line exceeds 80 because that line is long enough. In such
+case, proper decision should be made to make the code easier to read.</p>
 
 <p>A line may exceed 80 characters if it is</p>
 
 <ul>
   <li>a comment line which is not feasible to split without harming
   readability, ease of cut and paste or auto-linking -- e.g., if a line
-  contains an example command or a literal URL longer than 80 characters.</li>
+  contains an example command or a literal URL longer than 120 characters.</li>
 
-  <li>a raw-string literal with content that exceeds 80 characters.  Except for
+  <li>a raw-string literal with content that exceeds 120 characters.  Except for
   test code, such literals should appear near the top of a file.</li>
 
   <li>an include statement.</li>
@@ -4668,7 +4442,7 @@ interacts with the Windows API, which uses
 
 <h3 id="Spaces_vs._Tabs">Spaces vs. Tabs</h3>
 
-<p>Use only spaces, and indent 2 spaces at a time.</p>
+<p>Use only spaces, and indent 4 spaces at a time.</p>
 
 <p>We use spaces for indentation. Do not use tabs in your
 code. You should set your editor to emit spaces when you
@@ -4685,7 +4459,7 @@ not fit on a single line as you would wrap arguments in a
 
 
 <pre>ReturnType ClassName::FunctionName(Type par_name1, Type par_name2) {
-  DoSomething();
+    DoSomething();
   ...
 }
 </pre>
@@ -4694,18 +4468,18 @@ not fit on a single line as you would wrap arguments in a
 
 <pre>ReturnType ClassName::ReallyLongFunctionName(Type par_name1, Type par_name2,
                                              Type par_name3) {
-  DoSomething();
-  ...
+    DoSomething();
+    ...
 }
 </pre>
 
 <p>or if you cannot fit even the first parameter:</p>
 
 <pre>ReturnType LongClassName::ReallyReallyReallyLongFunctionName(
-    Type par_name1,  // 4 space indent
-    Type par_name2,
-    Type par_name3) {
-  DoSomething();  // 2 space indent
+        Type par_name1,  // 8 space indent
+        Type par_name2,
+        Type par_name3) {
+    DoSomething();  // 4 space indent
   ...
 }
 </pre>
@@ -4744,17 +4518,17 @@ not fit on a single line as you would wrap arguments in a
 
   <li>All parameters should be aligned if possible.</li>
 
-  <li>Default indentation is 2 spaces.</li>
+  <li>Default indentation is 4 spaces.</li>
 
-  <li>Wrapped parameters have a 4 space indent.</li>
+  <li>Wrapped parameters have a 8 space indent.</li>
 </ul>
 
 <p>Unused parameters that are obvious from context may be omitted:</p>
 
 <pre>class Foo {
- public:
-  Foo(const Foo&amp;) = delete;
-  Foo&amp; operator=(const Foo&amp;) = delete;
+public:
+    Foo(const Foo&amp;) = delete;
+    Foo&amp; operator=(const Foo&amp;) = delete;
 };
 </pre>
 
@@ -4793,13 +4567,13 @@ lists like other comma-separated lists.</p>
 <p>For by-reference captures, do not leave a space between the
 ampersand (&amp;) and the variable name.</p>
 <pre>int x = 0;
-auto x_plus_n = [&amp;x](int n) -&gt; int { return x + n; }
+auto xPlusN = [&amp;x](int n) -&gt; int { return x + n; }
 </pre>
 <p>Short lambdas may be written inline as function arguments.</p>
-<pre>std::set&lt;int&gt; to_remove = {7, 8, 9};
+<pre>std::set&lt;int&gt; toRemove = {7, 8, 9};
 std::vector&lt;int&gt; digits = {3, 9, 1, 8, 4, 7, 1};
-digits.erase(std::remove_if(digits.begin(), digits.end(), [&amp;to_remove](int i) {
-               return to_remove.find(i) != to_remove.end();
+digits.erase(std::remove_if(digits.begin(), digits.end(), [&amp;toRemove](int i) {
+                 return to_remove.find(i) != to_remove.end();
              }),
              digits.end());
 </pre>
@@ -4853,13 +4627,13 @@ paren:</p>
 <p>Arguments may optionally all be placed on subsequent
 lines with a four space indent:</p>
 <pre>if (...) {
-  ...
-  ...
-  if (...) {
-    bool result = DoSomething(
-        argument1, argument2,  // 4 space indent
-        argument3, argument4);
     ...
+    ...
+  if (...) {
+      bool result = DoSomething(
+          argument1, argument2,  // 4 space indent
+          argument3, argument4);
+      ...
   }
 </pre>
 
@@ -4876,8 +4650,8 @@ better addressed with the following techniques.</p>
 readability due to the complexity or confusing nature of the
 expressions that make up some arguments, try creating
 variables that capture those arguments in a descriptive name:</p>
-<pre>int my_heuristic = scores[x] * y + bases[x];
-bool result = DoSomething(my_heuristic, x, y, z);
+<pre>int myHeuristic = scores[x] * y + bases[x];
+bool result = DoSomething(myHeuristic, x, y, z);
 </pre>
 
 <p>Or put the confusing argument on its own line with
@@ -4919,6 +4693,7 @@ std::pair&lt;int, int&gt; p{foo, bar};
 SomeFunction(
     {"assume a zero-length name before {"},
     some_other_function_parameter);
+
 SomeType variable{
     some, other, values,
     {"assume a zero-length name before {"},
@@ -4927,9 +4702,11 @@ SomeType variable{
         some, other, values},
     SomeOtherType{"Slightly shorter string",
                   some, other, values}};
+
 SomeType variable{
     "This is too long to fit all in one line"};
-MyType m = {  // Here, you could also break before {.
+
+MyType m = { // Here, you could also break before {.
     superlongvariablename1,
     superlongvariablename2,
     {short, interior, list},
@@ -4961,29 +4738,25 @@ subsequent <code>else</code>, if any, appears on the same line as the preceding
 closing brace, separated by a space.</p>
 
 <pre>if (condition) {                   // no spaces inside parentheses, space before brace
-  DoOneThing();                    // two space indent
-  DoAnotherThing();
+    DoOneThing();                  // two space indent
+    DoAnotherThing();
 } else if (int a = f(); a != 3) {  // closing brace on new line, else on same line
-  DoAThirdThing(a);
+    DoAThirdThing(a);
 } else {
-  DoNothing();
+    DoNothing();
 }
 </pre>
 
-<p>For historical reasons, we allow one exception to the above rules: if an
-<code>if</code> statement has no <code>else</code> or <code>else if</code>
-clauses, then the curly braces for the controlled statement or the line breaks
-inside the curly braces may be omitted if as a result the entire <code>if</code>
-statement appears on either a single line (in which case there is a space
-between the closing parenthesis and the controlled statement) or on two lines
-(in which case there is a line break after the closing parenthesis and there are
-no braces). For example, the following forms are allowed under this
-exception.</p>
+<p>To make the code more tidy, the above style can have an exception: only if the
+statement following <code>if</code> can be short enough to be in the same line
+with <code>if</code>. In this case, such <code>if</code> statement can only be
+followed by one-line <code>else</code> clause. For example, the following forms
+are allowed under this exception.</p>
 
 <pre>if (x == kFoo) return new Foo();
 
-if (x == kBar)
-  return new Bar(arg1, arg2, arg3);
+if (x) DoThis();
+else DoThat();
 
 if (x == kQuz) { return new Quz(1, 2, 3); }
 </pre>
@@ -4996,10 +4769,7 @@ require curly braces always.</p>
 
 <p>Finally, these are not permitted:</p>
 
-<pre class="badcode">// Bad - IF statement with ELSE is missing braces
-if (x) DoThis();
-else DoThat();
-
+<pre class="badcode">
 // Bad - IF statement with ELSE does not have braces everywhere
 if (condition)
   foo;
@@ -5020,9 +4790,8 @@ if (condition1 &amp;&amp;
 
 <h3 id="Loops_and_Switch_Statements">Loops and Switch Statements</h3>
 
-<p>Switch statements may use braces for blocks. Annotate
-non-trivial fall-through between cases.
-Braces are optional for single-statement loops.
+<p>Switch statements may use braces for blocks. Annotate non-trivial
+fall-through between cases. Braces can never be omitted in loops.
 Empty loop bodies should use either empty braces or <code>continue</code>.</p>
 
 <p><code>case</code> blocks in <code>switch</code>
@@ -5035,22 +4804,21 @@ statements should always have a <code>default</code> case
 (in the case of an enumerated value, the compiler will
 warn you if any values are not handled). If the default
 case should never execute, treat this as an error. For example:
-
 </p>
 
 <div>
 <pre>switch (var) {
-  case 0: {  // 2 space indent
-    ...      // 4 space indent
-    break;
-  }
-  case 1: {
-    ...
-    break;
-  }
-  default: {
-    assert(false);
-  }
+    case 0: {  // 4 space indent
+        ...      // 8 space indent
+        break;
+    }
+    case 1: {
+        ...
+        break;
+    }
+    default: {
+        assert(false);
+    }
 }
 </pre>
 </div>
@@ -5067,40 +4835,31 @@ labels without intervening code, in which case no
 annotation is needed.</p>
 
 <pre>switch (x) {
-  case 41:  // No annotation needed here.
-  case 43:
-    if (dont_be_picky) {
-      // Use this instead of or along with annotations in comments.
-      ABSL_FALLTHROUGH_INTENDED;
-    } else {
-      CloseButNoCigar();
-      break;
-    }
-  case 42:
-    DoSomethingSpecial();
-    ABSL_FALLTHROUGH_INTENDED;
-  default:
-    DoSomethingGeneric();
-    break;
+    case 41:  // No annotation needed here.
+    case 43:
+        if (dont_be_picky) {
+            // Use this instead of or along with annotations in comments.
+            ABSL_FALLTHROUGH_INTENDED;
+        } else {
+            CloseButNoCigar();
+            break;
+        }
+    case 42:
+        DoSomethingSpecial();
+        ABSL_FALLTHROUGH_INTENDED;
+    default:
+        DoSomethingGeneric();
+        break;
 }
 </pre>
 
-<p> Braces are optional for single-statement loops.</p>
-
-<pre>for (int i = 0; i &lt; kSomeNumber; ++i)
-  printf("I love you\n");
-
-for (int i = 0; i &lt; kSomeNumber; ++i) {
-  printf("I take it back\n");
-}
-</pre>
-
+<p>Braces can never be omitted in loops.</p>
 
 <p>Empty loop bodies should use either an empty pair of braces or
 <code>continue</code> with no braces, rather than a single semicolon.</p>
 
 <pre>while (condition) {
-  // Repeat test until it returns false.
+    // Repeat test until it returns false.
 }
 for (int i = 0; i &lt; kSomeNumber; ++i) {}  // Good - one newline is also OK.
 while (condition) continue;  // Good - continue indicates no logic.
@@ -5133,28 +4892,19 @@ x = r-&gt;y;
    <code>*</code> or <code>&amp;</code>.</li>
 </ul>
 
-<p>When referring to a pointer or reference (variable declarations or definitions, arguments,
-return types, template parameters, etc), you may place the space before or after the
-asterisk/ampersand. In the trailing-space style, the space is elided in some cases (template
+<p>When referring to a pointer or reference (variable declarations
+or definitions, arguments, return types, template parameters, etc),
+you must place the space after the asterisk/ampersand. In the
+trailing-space style, the space is elided in some cases (template
 parameters, etc).</p>
 
-<pre>// These are fine, space preceding.
-char *c;
-const std::string &amp;str;
-int *GetPointer();
-std::vector&lt;char *&gt;
-
+<pre>
 // These are fine, space following (or elided).
 char* c;
 const std::string&amp; str;
 int* GetPointer();
 std::vector&lt;char*&gt;  // Note no space between '*' and '&gt;'
 </pre>
-
-<p>You should do this consistently within a single
-file.
-When modifying an existing file, use the style in
-that file.</p>
 
 It is allowed (if unusual) to declare multiple variables in the same
 declaration, but it is disallowed if any of those have pointer or
@@ -5177,8 +4927,8 @@ consistent in how you break up the lines.</p>
 <p>In this example, the logical AND operator is always at
 the end of the lines:</p>
 
-<pre>if (this_one_thing &gt; this_other_thing &amp;&amp;
-    a_third_thing == a_fourth_thing &amp;&amp;
+<pre>if (thisOneThing &gt; thisOtherThing &amp;&amp;
+    aThirdThing == aFourthThing &amp;&amp;
     yet_another &amp;&amp; last_one) {
   ...
 }
@@ -5186,13 +4936,11 @@ the end of the lines:</p>
 
 <p>Note that when the code wraps in this example, both of
 the <code>&amp;&amp;</code> logical AND operators are at
-the end of the line. This is more common in Google code,
-though wrapping all operators at the beginning of the
-line is also allowed. Feel free to insert extra
+the end of the line. Feel free to insert extra
 parentheses judiciously because they can be very helpful
-in increasing readability when used
-appropriately, but be careful about overuse. Also note that you
-should always use the punctuation operators, such as
+in increasing readability when used appropriately, but
+be careful about overuse. Also note that you should
+always use the punctuation operators, such as
 <code>&amp;&amp;</code> and <code>~</code>, rather than
 the word operators, such as <code>and</code> and
 <code>compl</code>.</p>
@@ -5203,16 +4951,18 @@ the word operators, such as <code>and</code> and
 expression with parentheses.</p>
 
 <p>Use parentheses in <code>return expr;</code> only
-where you would use them in <code>x = expr;</code>.</p>
+where you would use them in statements like
+<code>x = expr;</code>.</p>
 
-<pre>return result;                  // No parentheses in the simple case.
+<pre>return result; // No parentheses in the simple case.
+
 // Parentheses OK to make a complex expression more readable.
 return (some_long_condition &amp;&amp;
         another_condition);
 </pre>
 
-<pre class="badcode">return (value);                // You wouldn't write var = (value);
-return(result);                // return is not a function!
+<pre class="badcode">return (value); // You wouldn't write var = (value);
+return(result); // return is not a function!
 </pre>
 
 
@@ -5262,30 +5012,30 @@ of indented code, the directives should start at the
 beginning of the line.</p>
 
 <pre>// Good - directives at beginning of line
-  if (lopsided_score) {
+    if (lopsided_score) {
 #if DISASTER_PENDING      // Correct -- Starts at beginning of line
-    DropEverything();
+        DropEverything();
 # if NOTIFY               // OK but not required -- Spaces after #
-    NotifyClient();
+        NotifyClient();
 # endif
 #endif
-    BackToNormal();
-  }
+        BackToNormal();
+    }
 </pre>
 
 <pre class="badcode">// Bad - indented directives
-  if (lopsided_score) {
-    #if DISASTER_PENDING  // Wrong!  The "#if" should be at beginning of line
-    DropEverything();
-    #endif                // Wrong!  Do not indent "#endif"
-    BackToNormal();
-  }
+    if (lopsided_score) {
+        #if DISASTER_PENDING  // Wrong!  The "#if" should be at beginning of line
+        DropEverything();
+        #endif                // Wrong!  Do not indent "#endif"
+        BackToNormal();
+    }
 </pre>
 
 <h3 id="Class_Format">Class Format</h3>
 
 <p>Sections in <code>public</code>, <code>protected</code> and
-<code>private</code> order, each indented one space.</p>
+<code>private</code> order, with no indent.</p>
 
 <p>The basic format for a class definition (lacking the
 comments, see <a href="#Class_Comments">Class
@@ -5293,23 +5043,23 @@ Comments</a> for a discussion of what comments are
 needed) is:</p>
 
 <pre>class MyClass : public OtherClass {
- public:      // Note the 1 space indent!
-  MyClass();  // Regular 2 space indent.
-  explicit MyClass(int var);
-  ~MyClass() {}
+public:
+    MyClass();  // Regular 4 space indent.
+    explicit MyClass(int var);
+    ~MyClass() {}
 
-  void SomeFunction();
-  void SomeFunctionThatDoesNothing() {
-  }
+    void SomeFunction();
+    void SomeFunctionThatDoesNothing() {
+    }
 
-  void set_some_var(int var) { some_var_ = var; }
-  int some_var() const { return some_var_; }
+    void setSomeVar(int var) { some_var_ = var; }
+    int someVar() const { return some_var_; }
 
- private:
+private:
   bool SomeInternalFunction();
 
-  int some_var_;
-  int some_other_var_;
+  int someVar_;
+  int someOtherVar_;
 };
 </pre>
 
@@ -5320,8 +5070,8 @@ needed) is:</p>
   the subclass name, subject to the 80-column limit.</li>
 
   <li>The <code>public:</code>, <code>protected:</code>,
-  and <code>private:</code> keywords should be indented
-  one space.</li>
+  and <code>private:</code> keywords should have no
+  indent.</li>
 
   <li>Except for the first instance, these keywords
   should be preceded by a blank line. This rule is
@@ -5348,14 +5098,14 @@ with subsequent lines indented four spaces.</p>
 
 <pre>// When everything fits on one line:
 MyClass::MyClass(int var) : some_var_(var) {
-  DoSomething();
+    DoSomething();
 }
 
 // If the signature and initializer list are not all on one line,
 // you must wrap before the colon and indent 4 spaces:
 MyClass::MyClass(int var)
     : some_var_(var), some_other_var_(var + 1) {
-  DoSomething();
+    DoSomething();
 }
 
 // When the list spans multiple lines, put each member on its own line
@@ -5363,7 +5113,7 @@ MyClass::MyClass(int var)
 MyClass::MyClass(int var)
     : some_var_(var),             // 4 space indent
       some_other_var_(var + 1) {  // lined up
-  DoSomething();
+    DoSomething();
 }
 
 // As with any other code block, the close curly can be on the same
@@ -5382,22 +5132,22 @@ extra level of indentation. For example, use:</p>
 <pre>namespace {
 
 void foo() {  // Correct.  No extra indentation within namespace.
-  ...
+    ...
 }
 
-}  // namespace
+} // namespace
 </pre>
 
 <p>Do not indent within a namespace:</p>
 
 <pre class="badcode">namespace {
 
-  // Wrong!  Indented when it should not be.
-  void foo() {
-    ...
-  }
+    // Wrong!  Indented when it should not be.
+    void foo() {
+        ...
+    }
 
-}  // namespace
+} // namespace
 </pre>
 
 <h3 id="Horizontal_Whitespace">Horizontal Whitespace</h3>
@@ -5407,11 +5157,12 @@ trailing whitespace at the end of a line.</p>
 
 <h4>General</h4>
 
-<pre>int i = 0;  // Two spaces before end-of-line comments.
+<pre>int i = 0; // One spaces before end-of-line comments.
 
-void f(bool b) {  // Open braces should always have a space before them.
-  ...
-int i = 0;  // Semicolons usually have no space before them.
+void f(bool b) { // Open braces should always have a space before them.
+    ...
+}
+int i = 0; // Semicolons usually have no space before them.
 // Spaces inside braces for braced-init-list are optional.  If you use them,
 // put them on both sides!
 int x[] = { 0 };
@@ -5419,12 +5170,13 @@ int x[] = {0};
 
 // Spaces around the colon in inheritance and initializer lists.
 class Foo : public Bar {
- public:
-  // For inline function implementations, put spaces between the braces
-  // and the implementation itself.
-  Foo(int b) : Bar(), baz_(b) {}  // No spaces inside empty braces.
-  void Reset() { baz_ = 0; }  // Spaces separating braces from implementation.
-  ...
+public:
+    // For inline function implementations, put spaces between the braces
+    // and the implementation itself.
+    Foo(int b) : Bar(), baz_(b) {} // No spaces inside empty braces.
+    void Reset() { baz_ = 0; } // Spaces separating braces from implementation.
+    ...
+};
 </pre>
 
 <p>Adding trailing whitespace can cause extra work for
@@ -5442,18 +5194,8 @@ else is working on the file).</p>
 } else {          // Spaces around else.
 }
 while (test) {}   // There is usually no space inside parentheses.
-switch (i) {
-for (int i = 0; i &lt; 5; ++i) {
-// Loops and conditions may have spaces inside parentheses, but this
-// is rare.  Be consistent.
-switch ( i ) {
-if ( test ) {
-for ( int i = 0; i &lt; 5; ++i ) {
-// For loops always have a space after the semicolon.  They may have a space
-// before the semicolon, but this is rare.
-for ( ; i &lt; 5 ; ++i) {
-  ...
-
+switch (i) {}
+for (int i = 0; i &lt; 5; ++i) {}
 // Range-based for loops always have a space before and after the colon.
 for (auto x : counts) {
   ...
@@ -5469,11 +5211,9 @@ switch (i) {
 <pre>// Assignment operators always have spaces around them.
 x = 0;
 
-// Other binary operators usually have spaces around them, but it's
-// OK to remove spaces around factors.  Parentheses should have no
-// internal padding.
+// Other binary operators usually have spaces around them.
+// Parentheses should have no internal padding.
 v = w * x + y / z;
-v = w*x + y/z;
 v = w * (x + z);
 
 // No spaces separating unary operators and their arguments.
@@ -5489,9 +5229,6 @@ if (x &amp;&amp; !y)
 // &lt;, or between &gt;( in a cast
 std::vector&lt;std::string&gt; x;
 y = static_cast&lt;char*&gt;(x);
-
-// Spaces between type and pointer are OK, but be consistent.
-std::vector&lt;char *&gt; x;
 </pre>
 
 <h3 id="Vertical_Whitespace">Vertical Whitespace</h3>
@@ -5540,9 +5277,6 @@ useful:</p>
 However, like all good rules, these sometimes have exceptions,
 which we discuss here.</p>
 
-
-
-<div>
 <h3 id="Existing_Non-conformant_Code">Existing Non-conformant Code</h3>
 
 <p>You may diverge from the rules when dealing with code that
@@ -5557,14 +5291,9 @@ original author or the person currently responsible for
 the code. Remember that <em>consistency</em> includes
 local consistency, too.</p>
 
-</div>
-
-
-
 <h3 id="Windows_Code">Windows Code</h3>
 
-<p> Windows
-programmers have developed their own set of coding
+<p> Windows programmers have developed their own set of coding
 conventions, mainly derived from the conventions in Windows
 headers and other Microsoft code. We want to make it easy
 for anyone to understand your code, so we have a single set
@@ -5575,26 +5304,20 @@ you might forget if you are used to the prevalent Windows
 style:</p>
 
 <ul>
-  <li>Do not use Hungarian notation (for example, naming
-  an integer <code>iNum</code>). Use the Google naming
-  conventions, including the <code>.cpp</code> extension
-  for source files.</li>
-
   <li>Windows defines many of its own synonyms for
   primitive types, such as <code>DWORD</code>,
   <code>HANDLE</code>, etc. It is perfectly acceptable,
   and encouraged, that you use these types when calling
   Windows API functions. Even so, keep as close as you
   can to the underlying C++ types. For example, use
-  <code>const TCHAR *</code> instead of
+  <code>const TCHAR*</code> instead of
   <code>LPCTSTR</code>.</li>
 
   <li>When compiling with Microsoft Visual C++, set the
   compiler to warning level 3 or higher, and treat all
   warnings as errors.</li>
 
-  <li>Do not use <code>#pragma once</code>; instead use
-  the standard Google include guards. The path in the
+  <li>Do not use <code>#pragma once</code>. The path in the
   include guards should be relative to the top of your
   project tree.</li>
 
@@ -5613,10 +5336,10 @@ style:</p>
 occasionally need to break on Windows:</p>
 
 <ul>
-  <li>Normally we <a href="#Multiple_Inheritance">strongly discourage
-  the use of multiple implementation inheritance</a>;
-  however, it is required when using COM and some ATL/WTL
-  classes. You may use multiple implementation
+  <li>Normally we strongly discourage the use of
+  <a href="#Multiple_Inheritance">multiple implementation
+  inheritance</a>; however, it is required when using COM
+  and some ATL/WTL classes. You may use multiple implementation
   inheritance to implement COM or ATL/WTL classes and
   interfaces.</li>
 
