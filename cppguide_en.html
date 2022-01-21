@@ -29,9 +29,9 @@ just source file formatting.</p>
 <h2 id="C++_Version">C++ Version</h2>
 
 <p>Currently, code should target C++17, i.e., should not use C++2x
-  features, with the exception of <a href="#Designated_initializers">designated
-  initializers</a>. The C++ version targeted by this guide will advance
-  (aggressively) over time.</p>
+features, with the exception of <a href="#Designated_initializers">designated
+initializers</a>. The C++ version targeted by this guide will advance
+(aggressively) over time.</p>
 
 <p>Do not use
   <a href="#Nonstandard_Extensions">non-standard extensions</a>.</p>
@@ -93,28 +93,21 @@ possible.</p>
 <p>All header files should have <code>#define</code> guards to
 prevent multiple inclusion. The format of the symbol name
 should be
-
 <code><i>&lt;PROJECT&gt;</i>_<i>&lt;PATH&gt;</i>_<i>&lt;FILE&gt;</i>_H_</code>.</p>
 
-
-
-<div>
 <p>To guarantee uniqueness, they should
 be based on the full path in a project's source tree. For
 example, the file <code>foo/src/bar/baz.h</code> in
 project <code>foo</code> should have the following
 guard:</p>
-</div>
 
 <pre>#ifndef FOO_BAR_BAZ_H_
 #define FOO_BAR_BAZ_H_
 
 ...
 
-#endif  // FOO_BAR_BAZ_H_
+#endif // FOO_BAR_BAZ_H_
 </pre>
-
-
 
 <h3 id="Include_What_You_Use">Include What You Use</h3>
 
@@ -196,7 +189,7 @@ void f(void*);
 void test(D* x) { f(x); }  // calls f(B*)
 </pre>
   If the <code>#include</code> was replaced with forward
-  decls for <code>B</code> and <code>D</code>,
+  declarations for <code>B</code> and <code>D</code>,
   <code>test()</code> would call <code>f(void*)</code>.
   </li>
 
@@ -323,18 +316,10 @@ Thus, this rule ensures that build breaks show up first
 for the people working on these files, not for innocent
 people in other packages.</p>
 
-<p><code><var>dir/foo</var>.cpp</code> and
-<code><var>dir2/foo2</var>.h</code> are usually in the same
-directory (e.g., <code>base/basictypes_test.cpp</code> and
-<code>base/basictypes.h</code>), but may sometimes be in different
-directories too.</p>
-
-
-
 <p>Note that the C headers such as <code>stddef.h</code>
 are essentially interchangeable with their C++ counterparts
-(<code>cstddef</code>).
-Either style is acceptable, but prefer consistency with existing code.</p>
+(<code>cstddef</code>). Perfer the C++ counterparts if they
+are all the same.</p>
 
 <p>Within each section the includes should be ordered
 alphabetically. Note that older code might not conform to
@@ -358,7 +343,7 @@ might look like this:</p>
 #include "foo/server/bar.h"
 </pre>
 
-<p><b>Exception:</b></p>
+<p class="exception">
 
 <p>Sometimes, system-specific code needs
 conditional includes. Such code can put conditional
@@ -440,15 +425,12 @@ namespaces, this can add a lot of clutter.</p>
 <p>Namespaces should be used as follows:</p>
 
 <ul>
-  <li>Follow the rules on <a href="#Namespace_Names">Namespace Names</a>.
-  </li><li>Terminate multi-line namespaces with comments as shown in the given examples.
-  </li><li>
-
+  <li>Follow the rules on <a href="#Namespace_Names">Namespace Names</a>.</li>
+  <li>Terminate multi-line namespaces with comments as shown in the given examples.</li>
+  <li>
   <p>Namespaces wrap the entire source file after
-  includes,
-  <a href="https://gflags.github.io/gflags/">
-  gflags</a> definitions/declarations
-  and forward declarations of classes from other namespaces.</p>
+  includes, and forward declarations of classes
+  from other namespaces.</p>
 
 <pre>// In the .h file
 namespace mynamespace {
@@ -914,15 +896,15 @@ variables.</p>
 </ul>
 
 <p class="decision"></p>
-  <p><code>thread_local</code> variables inside a function have no safety
-    concerns, so they can be used without restriction. Note that you can use
-    a function-scope <code>thread_local</code> to simulate a class- or
-    namespace-scope <code>thread_local</code> by defining a function or
-    static method that exposes it:</p>
+<p><code>thread_local</code> variables inside a function have no safety
+concerns, so they can be used without restriction. Note that you can use
+a function-scope <code>thread_local</code> to simulate a class- or
+namespace-scope <code>thread_local</code> by defining a function or
+static method that exposes it:</p>
 
 <pre>Foo&amp; MyThreadLocalFoo() {
-  thread_local Foo result = ComplicatedInitialization();
-  return result;
+    thread_local Foo result = ComplicatedInitialization();
+    return result;
 }
 </pre>
 
@@ -953,10 +935,6 @@ don'ts you should follow when writing a class.</p>
 <p>Avoid virtual method calls in constructors, and avoid
 initialization that can fail if you can't signal an error.</p>
 
-<p class="definition"></p>
-<p>It is possible to perform arbitrary initialization in the body
-of the constructor.</p>
-
 <p class="pros"></p>
 <ul>
   <li>No need to worry about whether the class has been initialized or
@@ -981,7 +959,7 @@ of the constructor.</p>
 
   <li>If the work fails, we now have an object whose initialization
   code failed, so it may be an unusual state requiring a <code>bool
-  IsValid()</code> state checking mechanism (or similar) which is easy
+  Valid()</code> state checking mechanism (or similar) which is easy
   to forget to call.</li>
 
   <li>You cannot take the address of a constructor, so whatever work
@@ -994,8 +972,7 @@ of the constructor.</p>
 for your code, terminating the program may be an appropriate error
 handling response. Otherwise, consider a factory function
 or <code>Init()</code> method as described in
-<a href="https://abseil.io/tips/42">TotW #42</a>
-.
+<a href="https://abseil.io/tips/42">TotW #42</a>.
 Avoid <code>Init()</code> methods on objects with
 no other states that affect which public methods may be called
 (semi-constructed objects of this form are particularly hard to work
@@ -1097,10 +1074,7 @@ conversion.</p>
 <p>Implicit conversions can sometimes be necessary and appropriate for
 types that are designed to be interchangeable, for example when objects
 of two types are just different representations of the same underlying
-value. In that case, contact
-your project leads to request a waiver
-of this rule.
-</p>
+value. In that case, you may ignore this rule.</p>
 
 <p>Constructors that cannot be called with a single argument
 may omit <code>explicit</code>. Constructors that
@@ -1299,22 +1273,23 @@ and some functors.</p>
 <p>Prefer to use a <code>struct</code> instead of a pair or a
 tuple whenever the elements can have meaningful names.</p>
 
-<p>
-  While using pairs and tuples can avoid the need to define a custom type,
-  potentially saving work when <em>writing</em> code, a meaningful field
-  name will almost always be much clearer when <em>reading</em> code than
-  <code>.first</code>, <code>.second</code>, or <code>std::get&lt;X&gt;</code>.
-  While C++14's introduction of <code>std::get&lt;Type&gt;</code> to access a
-  tuple element by type rather than index (when the type is unique) can
-  sometimes partially mitigate this, a field name is usually substantially
-  clearer and more informative than a type.
-</p>
+<p>While using pairs and tuples can avoid the need to define a custom type,
+potentially saving work when <em>writing</em> code, a meaningful field
+name will almost always be much clearer when <em>reading</em> code than
+<code>.first</code>, <code>.second</code>, or <code>std::get&lt;X&gt;</code>.
+While C++14's introduction of <code>std::get&lt;Type&gt;</code> to access a
+tuple element by type rather than index (when the type is unique) can
+sometimes partially mitigate this, a field name is usually substantially
+clearer and more informative than a type.</p>
 
-<p>
-  Pairs and tuples may be appropriate in generic code where there are not
-  specific meanings for the elements of the pair or tuple. Their use may
-  also be required in order to interoperate with existing code or APIs.
-</p>
+<p>Pairs and tuples may be appropriate in generic code where there are not
+specific meanings for the elements of the pair or tuple. Their use may
+also be required in order to interoperate with existing code or APIs.</p>
+
+<p>If you are aiming at C++17, there is another choice to use:
+<a href="#Structured_bindings">structured bindings</a>. In such case,
+using a <code>std::pair</code> or <code>std::tuple</code> seems easier
+and clearer. Prefer using structured binding if possible.</p>
 
 <a id="Multiple_Inheritance"></a>
 <h3 id="Inheritance">Inheritance</h3>
@@ -3019,7 +2994,7 @@ std::array numbers = {4, 8, 15, 16, 23, 42};</pre>
     style rule</a>, which largely supersedes the general rules for
   type deduction.</p>
 
-<h4>Structured bindings</h4>
+<h4 id="Structured_bindings">Structured bindings</h4>
 
 <p>Unlike other forms of type deduction, structured bindings can actually
   give the reader additional information, by giving meaningful names to the
