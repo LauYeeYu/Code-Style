@@ -3735,25 +3735,34 @@ of files called, e.g., <code>foo_bar.h</code> and
 
 <h3 id="Type_Names">Type Names</h3>
 
-<p>Type names start with a capital letter and have a capital
+<p>Public type names start with a capital letter and have a capital
 letter for each new word, with no underscores:
-<code>MyExcitingClass</code>, <code>MyExcitingEnum</code>.</p>
+<code>MyExcitingClass</code>, <code>MyExcitingEnum</code>.
+Private type names should have an extra underscore at the end.</p>
 
-<p>The names of all types — classes, structs, type aliases,
+<p>The names of all public types — classes, structs, type aliases,
 enums, and type template parameters — have the same naming convention.
 Type names should start with a capital letter and have a capital letter
-for each new word. No underscores. For example:</p>
+for each new word. No underscores.</p>
+
+<p>For private functions, type names should start with a capital letter,
+end with an underscore and have a capital letter for each new word.</p>
+
+<p>For example:</p>
 
 <pre>// classes and structs
 class UrlTable { ...
+private:
+    class PrivateMember_ {...
+
 class UrlTableTester { ...
 struct UrlTableProperties { ...
 
 // typedefs
-typedef hash_map&lt;UrlTableProperties *, std::string&gt; PropertiesMap;
+typedef std::hash_map&lt;UrlTableProperties*, std::string&gt; PropertiesMap;
 
 // using aliases
-using PropertiesMap = hash_map&lt;UrlTableProperties *, std::string&gt;;
+using PropertiesMap = std::hash_map&lt;UrlTableProperties*, std::string&gt;;
 
 // enums
 enum class UrlTableError { ...
@@ -3779,8 +3788,8 @@ structs) additionally have trailing underscores. For instance:
 
 <h4>Class Data Members</h4>
 
-<p>Data members of classes, both static and non-static, are
-named like ordinary nonmember variables, but with a
+<p>Private data members of classes, both static and non-static,
+are named like ordinary nonmember variables, but with a
 trailing underscore.</p>
 
 <pre>class TableInfo {
@@ -3795,7 +3804,8 @@ private:
 
 <p>Data members of structs, both static and non-static,
 are named like ordinary nonmember variables. They do not have
-the trailing underscores that data members in classes have.</p>
+the trailing underscores that private data members in classes
+have.</p>
 
 <pre>struct UrlTableProperties {
     std::string name;
@@ -3843,6 +3853,10 @@ OpenFileOrDie()
 constants that are exposed as part of an API and that are intended to look
 like functions, because the fact that they're objects rather than functions
 is an unimportant implementation detail.)</p>
+
+<p>For the private functions that is no part of the API, the funcitons should
+be ended with an extra underscore ot indicate that these are private member
+functions, like <code>PrivateFunction_()</code>.</p>
 
 <p>Accessors and mutators (get and set functions) may be named like
 variables. These often correspond to actual member variables, but this is
