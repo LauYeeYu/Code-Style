@@ -1880,7 +1880,8 @@ members.</p>
 <p>Exceptions are accepted only when aborting the procedure
 of constructing a class, or when casuing fatal error. Do
 not use it just because it is easy to go back to previous
-functions.</p>
+functions. All exceptions must be derived from
+<code>std::exception</code>.</p>
 
 <p class="pros"></p>
 <ul>
@@ -1966,6 +1967,9 @@ to abort the construction procedure. The second is when
 causing an fatal error in some function, like visiting an
 embedded array out of bound. However, please avoid using
 exceptions just to make the operation easier.</p>
+
+<p>Please note that all the exceptions must be derived
+from <code>std::exception</code>.</p>
 
 <p>There is an <a href="#Windows_Code">exception</a> to
 this rule (no pun intended) for Windows code.</p>
