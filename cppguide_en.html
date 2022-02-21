@@ -1877,7 +1877,10 @@ members.</p>
 
 <h3 id="Exceptions">Exceptions</h3>
 
-<p>We do not use C++ exceptions.</p>
+<p>Exceptions are accepted only when aborting the procedure
+of constructing a class, or when casuing fatal error. Do
+not use it just because it is easy to go back to previous
+functions.</p>
 
 <p class="pros"></p>
 <ul>
@@ -1954,25 +1957,15 @@ members.</p>
 </ul>
 
 <p class="decision"></p>
-<p>On their face, the benefits of using exceptions
-outweigh the costs, especially in new projects. However,
-for existing code, the introduction of exceptions has
-implications on all dependent code. If exceptions can be
-propagated beyond a new project, it also becomes
-problematic to integrate the new project into existing
-exception-free code.</p>
+<p>In most cases, the benefits of using exceptions
+outweigh the costs, especially in new projects.</p>
 
-<p>Given that most existing code is not
-exception-tolerant, the costs of using exceptions are
-somewhat greater than the costs in a new project. The
-conversion process would be slow and error-prone. We
-don't believe that the available alternatives to
-exceptions, such as error codes and assertions, introduce
-a significant burden. </p>
-
-<p>This prohibition also applies to exception handling related
-features such as <code>std::exception_ptr</code> and
-<code>std::nested_exception</code>.</p>
+<p>There are typically two cases when using exceptions
+sounds a good choice. Constructors must use exception
+to abort the construction procedure. The second is when
+causing an fatal error in some function, like visiting an
+embedded array out of bound. However, please avoid using
+exceptions just to make the operation easier.</p>
 
 <p>There is an <a href="#Windows_Code">exception</a> to
 this rule (no pun intended) for Windows code.</p>
